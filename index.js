@@ -5,7 +5,13 @@ dotenv.config();
 import productRouter from "./routes/product.js";
 import userRouter from "./routes/user.js";
 import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
+
 const app = express();
+const privateKey = fs.readFileSync("private-key.pem", "utf-8");
+
+const publicKey = fs.readFileSync("public-key.pem", "utf-8");
 
 /* -------------------------- Built-in middlewares -------------------------- */
 
@@ -16,7 +22,7 @@ app.use(express.json());
 const auth = (req, res, next) => {
   try {
     const token = req.get("Authorization").split("Bearer ")[1];
-    var decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    var decoded = jwt.verify(token, publicKey);
     if (decoded.email) {
       next();
     } else {
@@ -28,7 +34,9 @@ const auth = (req, res, next) => {
 };
 
 const attatchToken = (req, res, next) => {
-  let token = jwt.sign({ ...req.body }, process.env.JWT_SECRET_KEY);
+  let token = jwt.sign({ email: req.body.email }, privateKey, {
+    algorithm: "RS256",
+  });
   req.body.token = token;
   next();
 };
