@@ -2,10 +2,22 @@ import { Products } from "../models/product.js";
 
 export const getProducts = async (req, res) => {
   try {
-    const products = await Products.find();
+    let products;
+    let query = Products.find();
+    if (req.query) {
+      let field = "title" || req.query.sort;
+      let order = "asc" || req.query.order;
+      let limit = 5 || req.query.limit;
+      products = await query
+        .sort({ [field]: order })
+        .limit(parseInt(limit))
+        .exec();
+    } else {
+      products = await query.exec();
+    }
     return res.status(200).json(products);
   } catch (error) {
-    throw error;
+    throw res.sendStatus(400);
   }
 };
 

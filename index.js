@@ -4,10 +4,10 @@ import mongoose from "mongoose";
 dotenv.config();
 import productRouter from "./routes/product.js";
 import userRouter from "./routes/user.js";
+import fileRouter from "./routes/file.js";
 import jwt from "jsonwebtoken";
 import fs from "fs";
-import path from "path";
-
+import upload from "./middlewares/upload.js";
 const app = express();
 const privateKey = fs.readFileSync("private-key.pem", "utf-8");
 
@@ -43,6 +43,7 @@ const attatchToken = (req, res, next) => {
 
 app.use("/users/", attatchToken, userRouter);
 app.use("/products/", auth, productRouter);
+app.use("/api/files/", upload.single("image"), fileRouter);
 
 app.listen(process.env.PORT, async () => {
   await mongoose.connect(process.env.MONGODB_URI).then(() => {
